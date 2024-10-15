@@ -84,8 +84,13 @@
   :group 'applications)
 
 (defcustom dape-adapter-dir
-  (file-name-as-directory (concat user-emacs-directory "debug-adapters"))
+  (file-name-as-directory (concat user-emacs-directory "debug-adapters" ))
   "Directory to store downloaded adapters in."
+  :type 'string)
+
+(defcustom dape-adapter-dir-js
+  (file-name-as-directory (concat "/nix/store/siwp2rpzbaqylywgzjx7y00929m69c8d-vscode-js-debug-1.94.0" ))
+  "Directory where vscode-js-debug is located"
   :type 'string)
 
 (defcustom dape-configs
@@ -278,10 +283,9 @@
                               (user-error "File %S does not exist" dap-debug-server-path))))
                 command "node"
                 command-args (,(expand-file-name
-                                (file-name-concat dape-adapter-dir
-                                                  "js-debug"
-                                                  "src"
-                                                  "dapDebugServer.js"))
+                                (file-name-concat dape-adapter-dir-js
+                                                  "bin"
+                                                  "js-debug"))
                               :autoport)
                 port :autoport)))
         `((js-debug-node
@@ -299,12 +303,12 @@
            :cwd dape-cwd
            :program dape-buffer-default
            :console "internalConsole")
-	  (js-debug-node-attach
+	      (js-debug-node-attach
            modes (js-mode js-ts-mode typescript-mode typescript-ts-mode)
            ,@js-debug
            :type "pwa-node"
-	   :request "attach"
-	   :port 9229)
+	       :request "attach"
+	       :port 9229)
           (js-debug-chrome
            modes (js-mode js-ts-mode typescript-mode typescript-ts-mode)
            ,@js-debug
@@ -390,23 +394,23 @@
                   (unless (eglot-current-server)
                     (user-error "No eglot instance active in buffer %s" (current-buffer)))
                   (unless (seq-contains-p (eglot--server-capable :executeCommandProvider :commands)
-        			          "vscode.java.resolveClasspath")
-        	    (user-error "Jdtls instance does not bundle java-debug-server, please install")))))
+        			                      "vscode.java.resolveClasspath")
+        	        (user-error "Jdtls instance does not bundle java-debug-server, please install")))))
      fn (lambda (config)
           (with-current-buffer
               (find-file-noselect (dape-config-get config :filePath))
             (if-let ((server (eglot-current-server)))
-	        (pcase-let ((`[,module-paths ,class-paths]
-			     (eglot-execute-command server
+	            (pcase-let ((`[,module-paths ,class-paths]
+			                 (eglot-execute-command server
                                                     "vscode.java.resolveClasspath"
-					            (vector (plist-get config :mainClass)
+					                                (vector (plist-get config :mainClass)
                                                             (plist-get config :projectName))))
                             (port (eglot-execute-command server
-		                                         "vscode.java.startDebugSession" nil)))
-	          (thread-first config
+		                                                 "vscode.java.startDebugSession" nil)))
+	              (thread-first config
                                 (plist-put 'port port)
-			        (plist-put :modulePaths module-paths)
-			        (plist-put :classPaths class-paths)))
+			                    (plist-put :modulePaths module-paths)
+			                    (plist-put :classPaths class-paths)))
               server)))
      ,@(cl-flet ((resolve-main-class (key)
                    (ignore-errors
@@ -2732,7 +2736,7 @@ Using BUFFER and STR."
           (kill-buffer temp-buffer))
         (set-buffer-modified-p nil)
         (when write-capable-p
-	  (add-hook 'write-contents-functions #'dape--memory-write))
+	      (add-hook 'write-contents-functions #'dape--memory-write))
         (rename-buffer (format "*dape-memory @ %s*" address) t))))))
 
 (defun dape--memory-write ()
@@ -3277,9 +3281,9 @@ Helper for `dape--stack-frame-display'."
             ;; The following logic borrows from gud.el to interact
             ;; with `hl-line'.
             (when (featurep 'hl-line)
-	      (cond
+	          (cond
                (global-hl-line-mode (global-hl-line-highlight))
-	       ((and hl-line-mode hl-line-sticky-flag) (hl-line-highlight))))
+	           ((and hl-line-mode hl-line-sticky-flag) (hl-line-highlight))))
             (run-hooks 'dape-display-source-hook)))))))
 
 (defun dape--stack-frame-display (conn)
@@ -3406,10 +3410,10 @@ with HELP-ECHO string, MOUSE-FACE and FACE."
   (propertize name 'help-echo help-echo 'mouse-face mouse-face 'face face
               'keymap
               (gdb-make-header-line-mouse-map
-	       'mouse-1
-	       (lambda (event) (interactive "e")
-		 (save-selected-window
-		   (select-window (posn-window (event-start event)))
+	           'mouse-1
+	           (lambda (event) (interactive "e")
+		         (save-selected-window
+		           (select-window (posn-window (event-start event)))
                    (let ((buffer (dape--info-get-buffer-create mode id)))
                      (with-current-buffer buffer (revert-buffer))
                      (gdb-set-window-buffer buffer t)))))))
@@ -4360,7 +4364,7 @@ or `prefix' part of variable string."
         buffer-read-only nil
         font-lock-defaults '(dape--info-watch-edit-font-lock-keywords))
   (message "%s" (substitute-command-keys
-	         "Press \\[dape-info-watch-finish-edit] when finished \
+	             "Press \\[dape-info-watch-finish-edit] when finished \
 or \\[dape-info-watch-abort-changes] to abort changes")))
 
 (cl-defmethod dape--info-revert (&context (major-mode (eql dape-info-watch-edit-mode))
@@ -4522,7 +4526,7 @@ Send INPUT to DUMMY-PROCESS."
       ;;       to avoid error signal.
       (if (eq 'dape-quit cmd)
           (run-with-timer 0 nil 'call-interactively #'dape-quit)
-	(call-interactively cmd)))
+	    (call-interactively cmd)))
      ;; Evaluate expression
      (t
       (dape--repl-insert-prompt)
