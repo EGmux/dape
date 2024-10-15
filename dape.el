@@ -256,7 +256,7 @@
      command-cwd dape-command-cwd
      command "gdb"
      command-args ("--interpreter=dap")
-     defer-launch-attach t
+     defer-launch-attach nil ; if true won't work in nixos?
      :request "launch"
      :program "a.out"
      :args []
