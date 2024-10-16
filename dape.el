@@ -89,7 +89,7 @@
   :type 'string)
 
 (defcustom dape-adapter-dir-js
-  (file-name-as-directory (concat "/nix/store/siwp2rpzbaqylywgzjx7y00929m69c8d-vscode-js-debug-1.94.0" ))
+  (file-name-as-directory (concat "/nix/store/siwp2rpzbaqylywgzjx7y00929m69c8d-vscode-js-debug-1.94.0/lib/node_modules" ))
   "Directory where vscode-js-debug is located"
   :type 'string)
 
@@ -284,8 +284,10 @@
                 command "node"
                 command-args (,(expand-file-name
                                 (file-name-concat dape-adapter-dir-js
-                                                  "bin"
-                                                  "js-debug"))
+                                                  "js-debug"
+                                                  "dist"
+                                                  "src"
+                                                  "dapDebugServer.js"))
                               :autoport)
                 port :autoport)))
         `((js-debug-node
@@ -541,8 +543,9 @@ Functions and symbols:
                command "node"
                command-cwd dape-command-cwd
                command-args (,(expand-file-name
-                               (file-name-concat dape-adapter-dir
+                               (file-name-concat dape-adapter-dir-js
                                                  "js-debug"
+                                                 "dist"
                                                  "src"
                                                  "dapDebugServer.js"))
                              :autoport)
