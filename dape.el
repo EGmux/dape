@@ -88,6 +88,11 @@
   "Directory to store downloaded adapters in."
   :type 'string)
 
+(defcustom dape-js-adapter-dir
+  (file-name-as-directory "nix/store/4fsgdmyp9dxkpiyn5nrfwsnh8sgahga8-vscode-js-debug-1.94.0/lib/node_modules")
+  "Directory to store js adapter"
+  :type 'string)
+
 (defcustom dape-configs
   `((attach
      modes nil
