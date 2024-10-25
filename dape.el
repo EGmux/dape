@@ -284,8 +284,9 @@
                               (user-error "File %S does not exist" dap-debug-server-path))))
                 command "node"
                 command-args (,(expand-file-name
-                                (file-name-concat dape-adapter-dir
+                                (file-name-concat dape-js-adapter-dir
                                                   "js-debug"
+                                                  "dist"
                                                   "src"
                                                   "dapDebugServer.js"))
                               :autoport)
