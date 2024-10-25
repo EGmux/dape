@@ -265,7 +265,8 @@
      :request "launch"
      :program "a.out"
      :args []
-     :stopAtBeginningOfMainSubprogram nil)
+     :stopAtBeginningOfMainSubprogram nil
+     :defer-launch-attach nil)
     (godot
      modes (gdscript-mode)
      port 6006
