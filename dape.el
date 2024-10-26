@@ -306,12 +306,12 @@
            :cwd dape-cwd
            :program dape-buffer-default
            :console "internalConsole")
-	  (js-debug-node-attach
+	      (js-debug-node-attach
            modes (js-mode js-ts-mode typescript-mode typescript-ts-mode)
            ,@js-debug
            :type "pwa-node"
-	   :request "attach"
-	   :port 9229)
+	       :request "attach"
+	       :port 9229)
           (js-debug-chrome
            modes (js-mode js-ts-mode typescript-mode typescript-ts-mode)
            ,@js-debug
@@ -397,23 +397,23 @@
                   (unless (eglot-current-server)
                     (user-error "No eglot instance active in buffer %s" (current-buffer)))
                   (unless (seq-contains-p (eglot--server-capable :executeCommandProvider :commands)
-        			          "vscode.java.resolveClasspath")
-        	    (user-error "Jdtls instance does not bundle java-debug-server, please install")))))
+        			                      "vscode.java.resolveClasspath")
+        	        (user-error "Jdtls instance does not bundle java-debug-server, please install")))))
      fn (lambda (config)
           (with-current-buffer
               (find-file-noselect (dape-config-get config :filePath))
             (if-let ((server (eglot-current-server)))
-	        (pcase-let ((`[,module-paths ,class-paths]
-			     (eglot-execute-command server
+	            (pcase-let ((`[,module-paths ,class-paths]
+			                 (eglot-execute-command server
                                                     "vscode.java.resolveClasspath"
-					            (vector (plist-get config :mainClass)
+					                                (vector (plist-get config :mainClass)
                                                             (plist-get config :projectName))))
                             (port (eglot-execute-command server
-		                                         "vscode.java.startDebugSession" nil)))
-	          (thread-first config
+		                                                 "vscode.java.startDebugSession" nil)))
+	              (thread-first config
                                 (plist-put 'port port)
-			        (plist-put :modulePaths module-paths)
-			        (plist-put :classPaths class-paths)))
+			                    (plist-put :modulePaths module-paths)
+			                    (plist-put :classPaths class-paths)))
               server)))
      ,@(cl-flet ((resolve-main-class (key)
                    (ignore-errors
@@ -534,6 +534,36 @@ Functions and symbols:
                         ((const :tag "Use configurationDone as trigger for launch/attach" defer-launch-attach) boolean)
                         ((const :tag "Adapter type" :type) string)
                         ((const :tag "Request type launch/attach" :request) string)))))
+
+(add-to-list 'dape-configs
+             `(junit
+               modes (java-mode java-ts-mode)
+               ensure (lambda (config)
+                        (save-excursion
+                          (unless (eglot-current-server)
+                            (user-error "No eglot instance active in buffer %s" (current-buffer)))
+                          (when (equal ':json-false
+                                       (eglot-execute-command
+                                        (eglot-java--find-server)
+                                        "java.project.isTestFile"
+                                        (vector (eglot--path-to-uri (buffer-file-name)))))
+                            (user-error "Not in a java test file"))
+                          t))
+               fn (lambda (config)
+                    (let ((file (expand-file-name (plist-get config :program)
+                                                  (project-root (project-current)))))
+                      (with-current-buffer (find-file-noselect file)
+                        (save-excursion (eglot-java-run-test t))
+                        (thread-first
+                          config
+                          (plist-put 'hostname "localhost")
+                          (plist-put 'port (eglot-execute-command (eglot-current-server)
+                                                                  "vscode.java.startDebugSession" nil))
+                          (plist-put :projectName (project-name (project-current)))))))
+               :program dape-buffer-default
+               :request "attach"
+               :hostname "localhost"
+               :port 8000))
 
 (defcustom dape-default-config-functions
   '(dape-config-autoport dape-config-tramp)
@@ -2747,7 +2777,7 @@ Using BUFFER and STR."
           (kill-buffer temp-buffer))
         (set-buffer-modified-p nil)
         (when write-capable-p
-	  (add-hook 'write-contents-functions #'dape--memory-write))
+	      (add-hook 'write-contents-functions #'dape--memory-write))
         (rename-buffer (format "*dape-memory @ %s*" address) t))))))
 
 (defun dape--memory-write ()
@@ -3292,9 +3322,9 @@ Helper for `dape--stack-frame-display'."
             ;; The following logic borrows from gud.el to interact
             ;; with `hl-line'.
             (when (featurep 'hl-line)
-	      (cond
+	          (cond
                (global-hl-line-mode (global-hl-line-highlight))
-	       ((and hl-line-mode hl-line-sticky-flag) (hl-line-highlight))))
+	           ((and hl-line-mode hl-line-sticky-flag) (hl-line-highlight))))
             (run-hooks 'dape-display-source-hook)))))))
 
 (defun dape--stack-frame-display (conn)
@@ -3421,10 +3451,10 @@ with HELP-ECHO string, MOUSE-FACE and FACE."
   (propertize name 'help-echo help-echo 'mouse-face mouse-face 'face face
               'keymap
               (gdb-make-header-line-mouse-map
-	       'mouse-1
-	       (lambda (event) (interactive "e")
-		 (save-selected-window
-		   (select-window (posn-window (event-start event)))
+	           'mouse-1
+	           (lambda (event) (interactive "e")
+		         (save-selected-window
+		           (select-window (posn-window (event-start event)))
                    (let ((buffer (dape--info-get-buffer-create mode id)))
                      (with-current-buffer buffer (revert-buffer))
                      (gdb-set-window-buffer buffer t)))))))
@@ -4375,7 +4405,7 @@ or `prefix' part of variable string."
         buffer-read-only nil
         font-lock-defaults '(dape--info-watch-edit-font-lock-keywords))
   (message "%s" (substitute-command-keys
-	         "Press \\[dape-info-watch-finish-edit] when finished \
+	             "Press \\[dape-info-watch-finish-edit] when finished \
 or \\[dape-info-watch-abort-changes] to abort changes")))
 
 (cl-defmethod dape--info-revert (&context (major-mode (eql dape-info-watch-edit-mode))
@@ -4537,7 +4567,7 @@ Send INPUT to DUMMY-PROCESS."
       ;;       to avoid error signal.
       (if (eq 'dape-quit cmd)
           (run-with-timer 0 nil 'call-interactively #'dape-quit)
-	(call-interactively cmd)))
+	    (call-interactively cmd)))
      ;; Evaluate expression
      (t
       (dape--repl-insert-prompt)
